@@ -1,0 +1,42 @@
+name: AI implement issue
+
+# Runs when the "ai-implement" label is added to an issue.
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write        # push the ai/issue-<n> branch
+  pull-requests: write   # open the draft PR
+  issues: write          # comment and remove the label
+
+# One run per issue at a time.
+concurrency:
+  group: ai-implement-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  implement:
+    if: github.event.label.name == 'ai-implement'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps chromium
+
+      - name: Run issue-to-PR workflow
+        run: npx tsx src/run-issue.ts
+        env:
+          GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FACTORY_LABEL: ai-implement

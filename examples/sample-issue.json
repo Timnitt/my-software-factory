@@ -1,0 +1,5 @@
+{
+  "number": 1,
+  "title": "Add a dark blue footer to the home page",
+  "body": "The home page (index.html) has no footer. Add a footer at the bottom with a dark blue background, white text, and the text \"© 2026 My Software Factory\"."
+}
